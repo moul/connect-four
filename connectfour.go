@@ -1,8 +1,9 @@
 package connectfour
 
 import (
-	"fmt"
+	"math/rand"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/moul/bolosseum/bots"
 )
 
@@ -25,12 +26,21 @@ func (b *ConnectfourBot) Init(message bots.QuestionMessage) *bots.ReplyMessage {
 func (b *ConnectfourBot) PlayTurn(question bots.QuestionMessage) *bots.ReplyMessage {
 	bot := NewConnectFour()
 
-	bot.Board = question.Board.([][]string)
+	board := question.Board
+	for y := 0; y < Rows; y++ {
+		row := board.([]interface{})[y]
+		for x := 0; x < Cols; x++ {
+			val := row.([]interface{})[x]
+			if val.(string) != "" {
+				bot.Board[y][x] = val.(string)
+			}
+		}
+	}
 
-	fmt.Println(bot)
+	logrus.Warnf("bot: %v", bot)
 
 	return &bots.ReplyMessage{
-		Play: 3,
+		Play: rand.Intn(Cols),
 	}
 }
 
