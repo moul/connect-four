@@ -10,7 +10,7 @@ import (
 
 var Rows = 6
 var Cols = 7
-var MaxDeepness = 3
+var MaxDeepness = 5
 
 func NewConnectfourBot() *ConnectfourBot {
 	return &ConnectfourBot{}
@@ -177,7 +177,9 @@ func (b *ConnectFour) ScoreMovements(currentPlayer string, deepness int) []Movem
 
 	//size := Cols * Rows
 	value := math.Pow(float64(MaxDeepness+1), float64(MaxDeepness-deepness))
-	logrus.Warnf("score=%q deepness=%d moves=%v winner=%q value=%f", currentPlayer, deepness, moves, b.Winner(), value)
+	if deepness < 3 {
+		logrus.Warnf("score=%q deepness=%d moves=%v winner=%q value=%f", currentPlayer, deepness, moves, b.Winner(), value)
+	}
 
 	for idx, move := range moves {
 		b.Play(move.Play, currentPlayer)
