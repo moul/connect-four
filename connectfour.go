@@ -39,6 +39,8 @@ func (b *ConnectfourBot) PlayTurn(question bots.QuestionMessage) *bots.ReplyMess
 
 	logrus.Warnf("bot: %v", bot)
 
+	bot.printMap()
+
 	return &bots.ReplyMessage{
 		Play: rand.Intn(Cols),
 	}
@@ -46,6 +48,20 @@ func (b *ConnectfourBot) PlayTurn(question bots.QuestionMessage) *bots.ReplyMess
 
 type ConnectFour struct {
 	Board [][]string
+}
+
+func (b *ConnectFour) printMap() {
+	for y := 0; y < Rows; y++ {
+		line := "|"
+		for x := 0; x < Cols; x++ {
+			if b.Board[y][x] != "" {
+				line += b.Board[y][x] + "|"
+			} else {
+				line += " |"
+			}
+		}
+		logrus.Warnf(line)
+	}
 }
 
 func NewConnectFour() ConnectFour {
