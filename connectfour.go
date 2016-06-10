@@ -71,7 +71,20 @@ func (b *ConnectfourBot) PlayTurn(question bots.QuestionMessage) *bots.ReplyMess
 			maxIdx = idx
 		}
 	}
-	logrus.Warnf("Playing %d with score %f", moves[maxIdx].Play, moves[maxIdx].Score)
+	bestMoves := []Movement{}
+	for _, move := range moves {
+		if move.Score == maxScore {
+			bestMoves = append(bestMoves, move)
+		}
+	}
+	picked := Movement{}
+	if len(bestMoves) > 1 {
+		picked = bestMoves[rand.Intn(len(bestMoves))]
+	} else {
+		picked = bestMoves[0]
+	}
+
+	logrus.Warnf("Playing %d with score %f, %d best moves", picked.Play, picked.Score, len(bestMoves))
 	return &bots.ReplyMessage{
 		Play: moves[maxIdx].Play,
 	}
