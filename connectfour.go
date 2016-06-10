@@ -123,10 +123,40 @@ func (b *ConnectFour) Winner() string {
 	}
 
 	//vertical
-	// FIXME
+	for _, piece := range pieces {
+		for x := 0; x < Cols; x++ {
+			continuous := 0
+			for y := 0; y < Rows; y++ {
+				if b.Board[y][x] == piece {
+					continuous++
+					if continuous == 4 {
+						return piece
+					}
+				} else {
+					continuous = 0
+				}
+			}
+		}
+	}
 
 	// diagnoals
-	// FIXME
+	for _, piece := range pieces {
+		for x := 0; x < Cols-4; x++ {
+			for y := 0; y < Rows-4; y++ {
+				continuous := 0
+				for i := 0; i < 4; i++ {
+					if b.Board[y+i][x+i] == piece {
+						continuous++
+						if continuous == 4 {
+							return piece
+						}
+					} else {
+						continuous = 0
+					}
+				}
+			}
+		}
+	}
 
 	return ""
 }
