@@ -7,11 +7,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"gopkg.in/redis.v3"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/moul/bolosseum/bots"
+	"github.com/robfig/go-cache"
 )
 
 var Rows = 6
@@ -19,8 +21,13 @@ var Cols = 7
 var MaxDeepness = 6
 
 var rc *redis.Client
+var c *cache.Cache
 
 func init() {
+	// initialize cache
+	c = cache.New(5*time.Minute, 30*time.Second)
+
+	// initialize redis
 	if os.Getenv("REDIS_HOSTNAME") != "" {
 		rc = redis.NewClient(&redis.Options{
 			Addr:     os.Getenv("REDIS_HOSTNAME"),
@@ -188,9 +195,12 @@ func (b *ConnectFour) Winner() string {
 }
 
 func (b *ConnectFour) BestMovements() []Movement {
-	var hash string
+	hash := b.Hash(b.Player)
+	if cachedMoves, found := c.Get(hash); found {
+		return cachedMoves.([]Movement)
+	}
+
 	if rc != nil {
-		hash = b.Hash(b.Player)
 		cachedMoves, err := rc.Get(hash).Result()
 		if err == nil {
 			moves := []Movement{}
@@ -200,6 +210,7 @@ func (b *ConnectFour) BestMovements() []Movement {
 					Play: play,
 				})
 			}
+			c.Set(hash, moves, -1)
 			return moves
 		}
 		if err != redis.Nil {
@@ -230,6 +241,7 @@ func (b *ConnectFour) BestMovements() []Movement {
 		}
 	}
 
+	c.Set(hash, bestMoves, -1)
 	if rc != nil {
 		bestMovesStr := ""
 		if len(bestMoves) > 0 {
