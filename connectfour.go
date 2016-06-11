@@ -4,14 +4,22 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/moul/bolosseum/bots"
+	"github.com/robfig/go-cache"
 )
 
 var Rows = 6
 var Cols = 7
 var MaxDeepness = 6
+
+var c *cache.Cache
+
+func init() {
+	c = cache.New(5*time.Minute, 30*time.Second)
+}
 
 func NewConnectfourBot() *ConnectfourBot {
 	return &ConnectfourBot{}
@@ -169,6 +177,11 @@ func (b *ConnectFour) Winner() string {
 }
 
 func (b *ConnectFour) BestMovements() []Movement {
+	hash := b.Hash(b.Player)
+	if cachedMoves, found := c.Get(hash); found {
+		return cachedMoves.([]Movement)
+	}
+
 	logrus.Warnf("bot: %v", b)
 	moves := b.ScoreMovements(b.Player, 1)
 	logrus.Warnf("score-moves: %v", moves)
@@ -191,6 +204,8 @@ func (b *ConnectFour) BestMovements() []Movement {
 			bestMoves = append(bestMoves, move)
 		}
 	}
+
+	c.Set(hash, bestMoves, -1)
 	return bestMoves
 }
 
